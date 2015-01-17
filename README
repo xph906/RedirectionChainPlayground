@@ -1,0 +1,41 @@
+Change list
+
+driver6-test.py:
+    class Player:
+        __init__(self)
+        __terminate(self)
+        __deadlock_break(self)
+        run(self)
+        __wait(self) : get apk name used for uninstall app
+        __lightclean(self)
+        __launch(self)
+        __install(self)
+        __uninstall(self)
+        __explore(sefl, interval)
+    
+    parse_arguments() :  add --snapshotavd
+    main(): change Player new stance creation  accordingly
+
+
+plg/explore.py:
+    class DevState:
+        is_browser(self)
+        explore(self)
+        explore_activity(self)
+
+plg/androdevice.py:
+    run_monkey(name=None, pkg=None,metainfo=None)
+
+plg/utils/logcat.py: add timeout so logcat process can terminate 
+    logcatlines(device=None, timeout=300,args='')
+    _logcat(device, fname, timeout,logcatargs)
+    logcat(fname, device=None,timeout=300, logcatargs='')
+
+
+plg/utils/androidutil.py:
+    checkmonkey(device=None)
+    killmonkey(device=None)
+    getdevices()
+    onlinedevices()
+    isdevicerunning(device)
+    getapkname(apk_path)

@@ -1,0 +1,12 @@
+These patches were created on top of tag `android-4.2.2_r1` but may apply easily
+to other versions also.
+
+The name of the patch indicates the project in the aosp tree, so that
+`development.patch` applies to `platform/development` project, for example. A
+patch may be applied to the respective project as (from the root of the
+project):
+
+    git am < patchfile
+
+`development.patch` changes the monkey to read stdin for online decisions as to
+allow or disallow an intent/package.

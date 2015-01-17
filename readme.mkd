@@ -1,0 +1,78 @@
+AppsPlayground
+==============
+
+General
+-------
+
+Please see the code in `driver0.py` for an idea how to run AppsPlayground.
+
+Here is a brief description of the various modules/utilities that may be used:
+
+`plg` is the library for AppsPlayground. It is being tested to work on Android
+4.2.  
+`plg.explore.explore` provides the main entry point for running AppsPlayground.  
+`plg.utils.lcat` contains code to get `logcat` messages.  
+`plg.utils.androutil` contains various helper utilities to launch commands with
+`adb`.  
+`plg.gpstask` contains the code to accept gps data and feed it to all existing
+emulators. More to come on this...  
+`plg.settings` contains various constants used throughout the code. Some are not
+used anymore.  
+`plg.metadata` extracts metadata from the apps.  
+
+You will need the Android SDK utilities such as adb, emulator, aapt, etc. in
+your path.
+
+`driver0.py` uses an already prepared/snapshotted avd. You can prepare the same.
+The method described in
+[Preparing Emulator Images](#markdown-header-preparing-emulator-images) works well.
+
+Requirements
+------------
+
+- Python version 3.3.
+- Python packages in `requirements.txt`. Can be installed with `pip` in
+  `virtualenv`.
+- Android SDK installed. tools, platform-tools, build-tools should all be in
+  path. Set `ANDROID_HOME` environment variable to Android SDK path.
+- AOSP project and build tools if building AOSP for custom images. See
+  `aosp_patches/readme.mkd` for related details.
+
+More dependencies may be added later. The recommended thing is to configure a
+virtual environment for python using `virtualenv` or `pyvenv`.
+
+Preparing Emulator Images
+-------------------------
+
+We will use x86 avds with hardware acceleration via KVM. Make sure KVM is working.
+Then follow this method:
+
+- Create the avds using `scripts/make_device.py`. This script automatically creates
+the avds with the right configuration for AppsPlayground.
+
+- Add `android-sdk/tools/lib` to `LD_LIBRARY_PATH`.
+
+- Use emulator-x86 to create the images first; emulator64-x86 always seg-faults 
+while saving images at the time of this writing.
+
+        $ emulator-x86 -no-snapshot-load -qemu -m 512 -enable-kvm
+	
+- After launching the emulator unlock the screen, and tap on OK if Android is providing
+some help about using the homescreen. The emulator may be closed now.
+
+- These saved images can be run with emulator64-x86 (or, of course, with emulator-x86)
+now:
+
+	    $ emulator64-x86 -no-snapshot-save -qemu -m 512 -enable-kvm
+
+At any time 16 distinct emulator
+instances can exist on one host. We plan to run multiple emulator instances on a
+host. Note that KVM acceleration will need emulators to be run on a physical
+host and not on a virtual machine.
+
+Key Issues
+----------
+
+1. Make AppsPlayground exploration more efficient.
+1. The emulator fails loading snapshot saying, `savevm: unable to load section
+ram`. Find a fix for this.

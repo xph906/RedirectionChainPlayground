@@ -1,0 +1,108 @@
+From 57db82d9d909ae872d92454b7cfdc6d3f06bcd2a Mon Sep 17 00:00:00 2001
+From: rv <rv000111@gmail.com>
+Date: Wed, 2 Apr 2014 17:14:26 -0500
+Subject: [PATCH 1/2] intent log functionality
+
+Change-Id: Ib22494c9b84ecf43429ea996078cc26185330fe1
+Signed-off-by: rv <rv000111@gmail.com>
+---
+ core/java/android/app/Instrumentation.java | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/core/java/android/app/Instrumentation.java b/core/java/android/app/Instrumentation.java
+index e0856ae..5adcfc3 100644
+--- a/core/java/android/app/Instrumentation.java
++++ b/core/java/android/app/Instrumentation.java
+@@ -47,6 +47,7 @@ import android.view.Window;
+ import java.io.File;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Arrays;
+ 
+ 
+ /**
+@@ -1343,6 +1344,15 @@ public class Instrumentation {
+         private final Intent mResultData;
+     }
+ 
++    private void logIntent(Intent intent) {
++        Log.i("plgintent", intent.toString());
++        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
++        int i = 2;
++        while (trace[i].getClassName().startsWith("android.app"))
++            i++;
++        Log.i("plgintent", trace[i].getClassName());
++    }
++
+     /**
+      * Execute a startActivity call made by the application.  The default 
+      * implementation takes care of updating any active {@link ActivityMonitor}
+@@ -1390,6 +1400,7 @@ public class Instrumentation {
+     public ActivityResult execStartActivity(
+             Context who, IBinder contextThread, IBinder token, Activity target,
+             Intent intent, int requestCode, Bundle options) {
++        logIntent(intent);
+         IApplicationThread whoThread = (IApplicationThread) contextThread;
+         if (mActivityMonitors != null) {
+             synchronized (mSync) {
+@@ -1445,6 +1456,8 @@ public class Instrumentation {
+     public void execStartActivitiesAsUser(Context who, IBinder contextThread,
+             IBinder token, Activity target, Intent[] intents, Bundle options,
+             int userId) {
++        for (Intent intent : intents)
++            logIntent(intent);
+         IApplicationThread whoThread = (IApplicationThread) contextThread;
+         if (mActivityMonitors != null) {
+             synchronized (mSync) {
+@@ -1505,6 +1518,7 @@ public class Instrumentation {
+     public ActivityResult execStartActivity(
+         Context who, IBinder contextThread, IBinder token, Fragment target,
+         Intent intent, int requestCode, Bundle options) {
++        logIntent(intent);
+         IApplicationThread whoThread = (IApplicationThread) contextThread;
+         if (mActivityMonitors != null) {
+             synchronized (mSync) {
+@@ -1565,6 +1579,7 @@ public class Instrumentation {
+     public ActivityResult execStartActivity(
+             Context who, IBinder contextThread, IBinder token, Activity target,
+             Intent intent, int requestCode, Bundle options, UserHandle user) {
++        logIntent(intent);
+         IApplicationThread whoThread = (IApplicationThread) contextThread;
+         if (mActivityMonitors != null) {
+             synchronized (mSync) {
+-- 
+1.8.3.1
+
+
+From fbfca7942c80f4445c9365653b1883641fc40a03 Mon Sep 17 00:00:00 2001
+From: rv <rv000111@gmail.com>
+Date: Mon, 7 Apr 2014 10:51:32 -0500
+Subject: [PATCH 2/2] single line log for intents
+
+Change-Id: Ifd9da3457614da30edd52a74d0ff4ec62c7bd434
+Signed-off-by: rv <rv000111@gmail.com>
+---
+ core/java/android/app/Instrumentation.java | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/core/java/android/app/Instrumentation.java b/core/java/android/app/Instrumentation.java
+index 5adcfc3..ecd8e36 100644
+--- a/core/java/android/app/Instrumentation.java
++++ b/core/java/android/app/Instrumentation.java
+@@ -1345,12 +1345,11 @@ public class Instrumentation {
+     }
+ 
+     private void logIntent(Intent intent) {
+-        Log.i("plgintent", intent.toString());
+         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+         int i = 2;
+         while (trace[i].getClassName().startsWith("android.app"))
+             i++;
+-        Log.i("plgintent", trace[i].getClassName());
++        Log.i("plgintent", trace[i].getClassName() + " " + intent.toString());
+     }
+ 
+     /**
+-- 
+1.8.3.1
+

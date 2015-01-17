@@ -1,0 +1,48 @@
+From 03643ca9a188ec8b7986c49919c01df37a0952ce Mon Sep 17 00:00:00 2001
+From: rv <rv000111@gmail.com>
+Date: Mon, 20 Jan 2014 14:28:06 -0600
+Subject: [PATCH] monkey read stdin to allow/disallow messages
+
+Change-Id: Ia0248d48d1ab7c7020f8d0ef8a9d359d7748f988
+Signed-off-by: rv <rv000111@gmail.com>
+---
+ cmds/monkey/src/com/android/commands/monkey/Monkey.java | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/cmds/monkey/src/com/android/commands/monkey/Monkey.java b/cmds/monkey/src/com/android/commands/monkey/Monkey.java
+index 5e86a79..b133d19 100644
+--- a/cmds/monkey/src/com/android/commands/monkey/Monkey.java
++++ b/cmds/monkey/src/com/android/commands/monkey/Monkey.java
+@@ -53,6 +53,7 @@ import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Random;
++import java.util.Scanner;
+ 
+ /**
+  * Application that injects random key events and other actions into the system.
+@@ -268,7 +269,9 @@ public class Monkey {
+      */
+     private class ActivityController extends IActivityController.Stub {
+         public boolean activityStarting(Intent intent, String pkg) {
+-            boolean allow = checkEnteringPackage(pkg) || (DEBUG_ALLOW_ANY_STARTS != 0);
++            System.out.println("allow " + intent + " " + pkg + "?");
++            String input = (new Scanner(System.in)).next();
++            boolean allow = input.equals("yes") || (DEBUG_ALLOW_ANY_STARTS != 0);
+             if (mVerbose > 0) {
+                 // StrictMode's disk checks end up catching this on
+                 // userdebug/eng builds due to PrintStream going to a
+@@ -289,7 +292,9 @@ public class Monkey {
+         public boolean activityResuming(String pkg) {
+             StrictMode.ThreadPolicy savedPolicy = StrictMode.allowThreadDiskWrites();
+             System.out.println("    // activityResuming(" + pkg + ")");
+-            boolean allow = checkEnteringPackage(pkg) || (DEBUG_ALLOW_ANY_RESTARTS != 0);
++            System.out.println("allow " + pkg + "?");
++            String input = (new Scanner(System.in)).next();
++            boolean allow = input.equals("yes") || (DEBUG_ALLOW_ANY_RESTARTS != 0);
+             if (!allow) {
+                 if (mVerbose > 0) {
+                     System.out.println("    // " + (allow ? "Allowing" : "Rejecting")
+-- 
+1.8.3.1
+

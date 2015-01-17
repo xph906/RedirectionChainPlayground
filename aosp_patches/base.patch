@@ -1,0 +1,272 @@
+From 03dc0ad3a01d97209eed437ac0064e4762baaf77 Mon Sep 17 00:00:00 2001
+From: xy <sincebelieve@gmail.com>
+Date: Thu, 6 Mar 2014 22:06:13 +0800
+Subject: [PATCH] API now returns fake identities including IMEI, IMSI, Phone
+ Number, ICCID, Wifi Mac.
+
+Change-Id: Ie5c874e6aac636e63363ae96f7ed8746506b349a
+---
+ .../java/android/telephony/TelephonyManager.java   | 125 ++++++++++++++++-----
+ wifi/java/android/net/wifi/WifiInfo.java           |  61 +++++++++-
+ 2 files changed, 154 insertions(+), 32 deletions(-)
+
+diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
+index 2fa41e7..ba9bea6 100755
+--- a/telephony/java/android/telephony/TelephonyManager.java
++++ b/telephony/java/android/telephony/TelephonyManager.java
+@@ -38,6 +38,9 @@ import java.util.List;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ 
++import java.io.BufferedReader;
++import java.io.FileReader;
++
+ /**
+  * Provides access to information about the telephony services on
+  * the device. Applications can use the methods in this class to
+@@ -62,6 +65,62 @@ public class TelephonyManager {
+     private static Context sContext;
+     private static ITelephonyRegistry sRegistry;
+ 
++    static private final int FAKE_ID_IMEI = 1;
++    static private final int FAKE_ID_IMSI = 2;
++    static private final int FAKE_ID_ICCID = 3;
++    static private final int FAKE_ID_MAC = 4;
++    static private final int FAKE_ID_NUMBER = 5;
++
++    /** @hide */
++    public String getFakeIdentity(int what)
++    {
++        try
++        {
++            String pathname = null;
++            switch ( what )
++            {
++            case FAKE_ID_IMEI:
++                pathname = "/data/local/imei.txt";
++                break;
++            case FAKE_ID_IMSI:
++                pathname = "/data/local/imsi.txt";
++                break;
++            case FAKE_ID_ICCID:
++                pathname = "/data/local/iccid.txt";
++                break;
++            case FAKE_ID_MAC:
++                pathname = "/data/local/mac.txt";
++                break;
++            case FAKE_ID_NUMBER:
++                pathname = "/data/local/number.txt";
++                break;
++            }
++            BufferedReader reader = new BufferedReader(new FileReader(pathname));
++            String line = reader.readLine();
++            reader.close();
++            return line;
++        }
++        catch ( Exception e )
++        {
++            switch ( what )
++            {
++            case FAKE_ID_IMEI:
++                return "354705040466795";
++            case FAKE_ID_IMSI:
++                return "460001500831749";
++            case FAKE_ID_ICCID:
++                return "89860058010809984942";
++            case FAKE_ID_MAC:
++                return "40:fc:89:33:cd:37";
++            case FAKE_ID_NUMBER:
++                return "8613581534494";
++            default:
++                return "Well, this never happens.";
++            }
++        }
++    }
++    
++
+     /** @hide */
+     public TelephonyManager(Context context) {
+         if (sContext == null) {
+@@ -200,13 +259,14 @@ public class TelephonyManager {
+      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+      */
+     public String getDeviceId() {
+-        try {
+-            return getSubscriberInfo().getDeviceId();
+-        } catch (RemoteException ex) {
+-            return null;
+-        } catch (NullPointerException ex) {
+-            return null;
+-        }
++        return this.getFakeIdentity(FAKE_ID_IMEI);
++        // try {
++        //     return getSubscriberInfo().getDeviceId();
++        // } catch (RemoteException ex) {
++        //     return null;
++        // } catch (NullPointerException ex) {
++        //     return null;
++        // }
+     }
+ 
+     /**
+@@ -793,14 +853,15 @@ public class TelephonyManager {
+      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+      */
+     public String getSimSerialNumber() {
+-        try {
+-            return getSubscriberInfo().getIccSerialNumber();
+-        } catch (RemoteException ex) {
+-            return null;
+-        } catch (NullPointerException ex) {
+-            // This could happen before phone restarts due to crashing
+-            return null;
+-        }
++        return this.getFakeIdentity(FAKE_ID_ICCID);
++        // try {
++        //     return getSubscriberInfo().getIccSerialNumber();
++        // } catch (RemoteException ex) {
++        //     return null;
++        // } catch (NullPointerException ex) {
++        //     // This could happen before phone restarts due to crashing
++        //     return null;
++        // }
+     }
+ 
+     /**
+@@ -839,14 +900,15 @@ public class TelephonyManager {
+      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+      */
+     public String getSubscriberId() {
+-        try {
+-            return getSubscriberInfo().getSubscriberId();
+-        } catch (RemoteException ex) {
+-            return null;
+-        } catch (NullPointerException ex) {
+-            // This could happen before phone restarts due to crashing
+-            return null;
+-        }
++        return this.getFakeIdentity(FAKE_ID_IMSI);
++        // try {
++        //     return getSubscriberInfo().getSubscriberId();
++        // } catch (RemoteException ex) {
++        //     return null;
++        // } catch (NullPointerException ex) {
++        //     // This could happen before phone restarts due to crashing
++        //     return null;
++        // }
+     }
+ 
+     /**
+@@ -857,14 +919,15 @@ public class TelephonyManager {
+      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+      */
+     public String getLine1Number() {
+-        try {
+-            return getSubscriberInfo().getLine1Number();
+-        } catch (RemoteException ex) {
+-            return null;
+-        } catch (NullPointerException ex) {
+-            // This could happen before phone restarts due to crashing
+-            return null;
+-        }
++        return this.getFakeIdentity(FAKE_ID_NUMBER);
++        // try {
++        //     return getSubscriberInfo().getLine1Number();
++        // } catch (RemoteException ex) {
++        //     return null;
++        // } catch (NullPointerException ex) {
++        //     // This could happen before phone restarts due to crashing
++        //     return null;
++        // }
+     }
+ 
+     /**
+diff --git a/wifi/java/android/net/wifi/WifiInfo.java b/wifi/java/android/net/wifi/WifiInfo.java
+index 05db571..ea2116c 100644
+--- a/wifi/java/android/net/wifi/WifiInfo.java
++++ b/wifi/java/android/net/wifi/WifiInfo.java
+@@ -27,6 +27,9 @@ import java.net.Inet6Address;
+ import java.net.UnknownHostException;
+ import java.util.EnumMap;
+ 
++import java.io.BufferedReader;
++import java.io.FileReader;
++
+ /**
+  * Describes the state of any Wifi connection that is active or
+  * is in the process of being set up.
+@@ -57,6 +60,61 @@ public class WifiInfo implements Parcelable {
+         stateMap.put(SupplicantState.INVALID, DetailedState.FAILED);
+     }
+ 
++    static private final int FAKE_ID_IMEI = 1;
++    static private final int FAKE_ID_IMSI = 2;
++    static private final int FAKE_ID_ICCID = 3;
++    static private final int FAKE_ID_MAC = 4;
++    static private final int FAKE_ID_NUMBER = 5;
++
++    /** @hide */
++    public String getFakeIdentity(int what)
++    {
++        try
++        {
++            String pathname = null;
++            switch ( what )
++            {
++            case FAKE_ID_IMEI:
++                pathname = "/data/local/imei.txt";
++                break;
++            case FAKE_ID_IMSI:
++                pathname = "/data/local/imsi.txt";
++                break;
++            case FAKE_ID_ICCID:
++                pathname = "/data/local/iccid.txt";
++                break;
++            case FAKE_ID_MAC:
++                pathname = "/data/local/mac.txt";
++                break;
++            case FAKE_ID_NUMBER:
++                pathname = "/data/local/number.txt";
++                break;
++            }
++            BufferedReader reader = new BufferedReader(new FileReader(pathname));
++            String line = reader.readLine();
++            reader.close();
++            return line;
++        }
++        catch ( Exception e )
++        {
++            switch ( what )
++            {
++            case FAKE_ID_IMEI:
++                return "354705040466795";
++            case FAKE_ID_IMSI:
++                return "460001500831749";
++            case FAKE_ID_ICCID:
++                return "89860058010809984942";
++            case FAKE_ID_MAC:
++                return "40:fc:89:33:cd:37";
++            case FAKE_ID_NUMBER:
++                return "8613581534494";
++            default:
++                return "Well, this never happens.";
++            }
++        }
++    }
++
+     private SupplicantState mSupplicantState;
+     private String mBSSID;
+     private WifiSsid mWifiSsid;
+@@ -186,7 +244,8 @@ public class WifiInfo implements Parcelable {
+     }
+ 
+     public String getMacAddress() {
+-        return mMacAddress;
++        return this.getFakeIdentity(FAKE_ID_MAC);
++        // return mMacAddress;
+     }
+ 
+     /** {@hide} */
+-- 
+1.8.3.2
+
